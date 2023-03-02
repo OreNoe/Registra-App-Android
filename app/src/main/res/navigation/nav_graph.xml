@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/readQrFragment"
+        android:name="com.example.marcelo.fragments.ReadQrFragment"
+        android:label="fragment_read_qr"
+        tools:layout="@layout/fragment_read_qr" >
+        <action
+            android:id="@+id/action_readQrFragment_to_resultScanFragment"
+            app:destination="@id/resultScanFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newUserFragment"
+        android:name="com.example.marcelo.fragments.NewUserFragment"
+        android:label="NewUserFragment" />
+    <fragment
+        android:id="@+id/resultScanFragment"
+        android:name="com.example.marcelo.fragments.ResultScanFragment"
+        android:label="fragment_result_scan"
+        tools:layout="@layout/fragment_result_scan" >
+        <argument
+            android:name="docRef"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/menuFragment"
+        android:name="com.example.marcelo.fragments.MenuFragment"
+        android:label="fragment_menu"
+        tools:layout="@layout/fragment_menu" >
+        <action
+            android:id="@+id/action_menuFragment_to_newUserFragment"
+            app:destination="@id/newUserFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_readQrFragment"
+            app:destination="@id/readQrFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_newSellerFragment"
+            app:destination="@id/newSellerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.marcelo.fragments.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newSellerFragment"
+        android:name="com.example.marcelo.fragments.NewSellerFragment"
+        android:label="fragment_new_seller"
+        tools:layout="@layout/fragment_new_seller" />
+</navigation>

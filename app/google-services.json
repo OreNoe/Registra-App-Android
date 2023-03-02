@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "855210368958",
+    "project_id": "registra-app",
+    "storage_bucket": "registra-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855210368958:android:37cdffd67f64a7c86723ef",
+        "android_client_info": {
+          "package_name": "com.example.marcelo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "855210368958-caeacsu18blqtuq27nkoghnljn3dtjea.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1EP0_YRaQtQWLlGt4VRJ2ov8QKNGlkJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "855210368958-caeacsu18blqtuq27nkoghnljn3dtjea.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
