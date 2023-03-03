@@ -56,34 +56,38 @@ class ResultScanFragment : Fragment() {
                 if (document != null) {
                     if (document.getString("name") != null){
                         val user = document.toObject(User::class.java)
-                        if (document.getBoolean("state") == true) {
-                            Log.d("TAG", "DocumentSnapshot data: ${document.data}")
-                            binding.nameTextview.text = "Name: " + user?.name
-                            binding.surnameTextview.text = "Surname: " + user?.surname
-                            binding.levelTextview.text = "Level: " + user?.lvl.toString()
+                        Log.d("TAG", "DocumentSnapshot data: ${document.data}")
 
-                            db.collection("users").document(docRef)
-                                .update("state", false)
-                                .addOnSuccessListener {Log.d("TAG", "DocumentSnapshot successfully updated!") }
-                                .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
-
-                            binding.backgroundView.setBackgroundColor(resources.getColor(R.color.green))
-
-                            //delete mail from database
-                            db.collection("mails").document(docRef)
-                                .delete()
-                                .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
-                                .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
-
-                            readAgain()
-                        }else{
-                            Log.d("TAG", "DocumentSnapshot data: ${document.data}")
-                            binding.backgroundView.setBackgroundColor(resources.getColor(R.color.red))
-                            binding.nameTextview.text = "User already"
-                            binding.surnameTextview.text = "registered"
-                            binding.levelTextview.text = user?.name + " " + user?.surname
-                            readAgain()
+                        when (user?.lvl) {
+                            1 -> {
+                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.bronze))
+                                binding.levelTextview.text = "Level: Bronze"
+                            }
+                            2 -> {
+                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.silver))
+                                binding.levelTextview.text = "Level: Silver"
+                            }
+                            3 -> {
+                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.gold))
+                                binding.levelTextview.text = "Level: Gold"
+                            }
                         }
+
+                        binding.nameTextview.text = "Name: " + user?.name
+                        binding.surnameTextview.text = "Surname: " + user?.surname
+
+                        db.collection("users").document(docRef)
+                            .update("state", true)
+                            .addOnSuccessListener {Log.d("TAG", "DocumentSnapshot successfully updated!") }
+                            .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
+
+                        //delete mail from database
+                        db.collection("mails").document(docRef)
+                            .delete()
+                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
+                            .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
+
+                        readAgain()
                     }else{ noExistUser() }
                 } else { noExistUser() }
             }

@@ -9,5 +9,5 @@ data class User(
     val surname: String = "",
     val email: String = "",
     val lvl: Int = 0,
-    val state: Boolean = true
+    val encargado: String = "",
 ):Parcelable

@@ -11,4 +11,7 @@
     <color name="red">#B7FF0000</color>
     <color name="yellow">#B7FFFF00</color>
     <color name="gray">#B7A9A9A9</color>
+    <color name="bronze">#B78F7035</color>
+    <color name="silver">#B7C0C0C0</color>
+    <color name="gold">#B7FFD700</color>
 </resources>

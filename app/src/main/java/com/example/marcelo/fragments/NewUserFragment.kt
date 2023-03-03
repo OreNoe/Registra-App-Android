@@ -1,11 +1,9 @@
 package com.example.marcelo.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -44,11 +42,12 @@ class NewUserFragment : Fragment() {
 
         if (auth.currentUser != null) {
             binding.continueButton.setOnClickListener {
+                val emailEncargado = auth.currentUser?.email.toString()
                 val nameTxt = binding.nameEdittext.text.toString()
                 val surnameTxt = binding.surnameEdittext.text.toString()
                 val emailTxt = binding.emailEdittext.text.toString()
                 val lvlNum = binding.spinner.selectedItemPosition + 1
-                val user = User(nameTxt, surnameTxt, emailTxt, lvlNum)
+                val user = User(nameTxt, surnameTxt, emailTxt, lvlNum, emailEncargado)
                 when{
                     nameTxt.isEmpty() -> {
                         binding.nameEdittext.error = "Please enter name"
@@ -74,9 +73,9 @@ class NewUserFragment : Fragment() {
 
                                 var color = ""
                                 when (lvlNum) {
-                                    1 -> color = "ffffff"
-                                    2 -> color = "cd7f32"
-                                    3 -> color = "fafa00"
+                                    1 -> color = "cd7f32"
+                                    2 -> color = "c0c0c0"
+                                    3 -> color = "ffd700"
                                 }
 
                                 val mailData = hashMapOf(
