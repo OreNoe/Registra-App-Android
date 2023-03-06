@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.example.marcelo.databinding.FragmentSelectQrReadingBinding
 import com.google.firebase.firestore.ktx.firestore
@@ -28,6 +29,7 @@ class SelectQrReadingFragment : Fragment() {
     ): View? {
         _binding = FragmentSelectQrReadingBinding.inflate(inflater, container, false)
         val view = binding.root
+        binding.progressBar.visibility = View.VISIBLE
         return view
     }
 
@@ -42,6 +44,7 @@ class SelectQrReadingFragment : Fragment() {
         db.collection("events")
             .get()
             .addOnSuccessListener { result ->
+                binding.progressBar.visibility = View.GONE
                 val events = mutableListOf<String>()
                 for (document in result) {
                     events.add(document.id)
@@ -54,13 +57,13 @@ class SelectQrReadingFragment : Fragment() {
                 println("Error getting documents: $exception")
             }
 
+
         binding.scanQrButton.setOnClickListener {
-            val event = binding.eventSpinner.selectedItem.toString()
-            val action =
-                SelectQrReadingFragmentDirections.actionSelectQrReadingFragmentToReadQrFragment(
-                    event
-                )
-            findNavController().navigate(action)
+            if (!binding.eventSpinner.adapter.isEmpty) {
+                val event = binding.eventSpinner.selectedItem.toString()
+                val action = SelectQrReadingFragmentDirections.actionSelectQrReadingFragmentToReadQrFragment(event)
+                findNavController().navigate(action)
+            }else {Toast.makeText(requireContext(), "No events found", Toast.LENGTH_SHORT).show()}
         }
     }
 }

@@ -26,6 +26,7 @@ class DeleteEventFragment : Fragment() {
     ): View? {
         _binding = FragmentDeleteEventBinding.inflate(inflater, container, false)
         val view = binding.root
+        binding.progressBar.visibility = View.VISIBLE
         return view
     }
 
@@ -39,6 +40,7 @@ class DeleteEventFragment : Fragment() {
         db.collection("events")
             .get()
             .addOnSuccessListener { result ->
+                binding.progressBar.visibility = View.GONE
                 val events = mutableListOf<String>()
                 for (document in result) {
                     events.add(document.id)
@@ -52,21 +54,28 @@ class DeleteEventFragment : Fragment() {
             }
 
         binding.btnDeleteEvent.setOnClickListener {
-            val event = binding.eventSpinner.selectedItem.toString()
-            //for all documents in the event collection delete them and also delete the ones in the mail collection with the same id
-            db.collection("events").document(event).collection("users").get()
-                .addOnSuccessListener { result ->
-                    for (document in result) {
-                        db.collection("mails").document(document.id).delete()
-                        db.collection("events").document(event).collection("users").document(document.id).delete()
+            if (!binding.eventSpinner.adapter.isEmpty) {
+                val event = binding.eventSpinner.selectedItem.toString()
+                //for all documents in the event collection delete them and also delete the ones in the mail collection with the same id
+                db.collection("events").document(event).collection("users").get()
+                    .addOnSuccessListener { result ->
+                        for (document in result) {
+                            db.collection("mails").document(document.id).delete()
+                            db.collection("events").document(event).collection("users")
+                                .document(document.id).delete()
+                        }
                     }
-                }
-                .addOnFailureListener { exception ->
-                    println("Error getting documents: $exception")
-                }
-            db.collection("events").document(event).delete()
-            Toast.makeText(requireContext(), "Evento eliminado correctamente!", Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
+                    .addOnFailureListener { exception ->
+                        println("Error getting documents: $exception")
+                    }
+                db.collection("events").document(event).delete()
+                Toast.makeText(
+                    requireContext(),
+                    "Evento eliminado correctamente!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                findNavController().popBackStack()
+            }else {Toast.makeText(requireContext(), "No hay eventos para eliminar!", Toast.LENGTH_SHORT).show()}
         }
     }
 }

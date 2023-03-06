@@ -33,4 +33,12 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
         android:text="Delete Event"/>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="182dp"
+        android:layout_height="181dp"
+        android:indeterminate="true"
+        />
+
 </LinearLayout>

@@ -75,10 +75,11 @@ class ResultScanFragment : Fragment() {
                         binding.nameTextview.text = "Name: " + user?.name
                         binding.surnameTextview.text = "Surname: " + user?.surname
 
+                        //update user in database
                         db.collection("events").document(event).collection("users").document(docRef)
-                            .delete()
-                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
-                            .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
+                            .update("status", true)
+                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully updated!") }
+                            .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
 
                         //delete mail from database
                         db.collection("mails").document(docRef)
