@@ -1,4 +1,4 @@
-package com.example.marcelo.fragments
+package com.example.marcelo.fragments.qr
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -6,13 +6,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.marcelo.R
 import com.example.marcelo.databinding.FragmentResultScanBinding
 import com.example.marcelo.entities.User
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -49,8 +47,9 @@ class ResultScanFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val docRef = arguments?.getString("docRef").toString()
+        val event = arguments?.getString("event").toString()
 
-        db.collection("users").document(docRef).get()
+        db.collection("events").document(event).collection("users").document(docRef).get()
             .addOnSuccessListener { document ->
                 binding.progressBar.visibility = View.GONE
                 if (document != null) {
@@ -76,10 +75,10 @@ class ResultScanFragment : Fragment() {
                         binding.nameTextview.text = "Name: " + user?.name
                         binding.surnameTextview.text = "Surname: " + user?.surname
 
-                        db.collection("users").document(docRef)
-                            .update("state", true)
-                            .addOnSuccessListener {Log.d("TAG", "DocumentSnapshot successfully updated!") }
-                            .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
+                        db.collection("events").document(event).collection("users").document(docRef)
+                            .delete()
+                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
+                            .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
 
                         //delete mail from database
                         db.collection("mails").document(docRef)
@@ -104,7 +103,7 @@ class ResultScanFragment : Fragment() {
 
     private fun noExistUser() {
         Log.d("TAG", "No such document")
-        binding.backgroundView.setBackgroundColor(resources.getColor(R.color.yellow))
+        binding.backgroundView.setBackgroundColor(resources.getColor(R.color.red))
         binding.nameTextview.text = "No such "
         binding.surnameTextview.text = "user"
         binding.levelTextview.text = "in database"

@@ -7,24 +7,30 @@
 
     <fragment
         android:id="@+id/readQrFragment"
-        android:name="com.example.marcelo.fragments.ReadQrFragment"
+        android:name="com.example.marcelo.fragments.qr.ReadQrFragment"
         android:label="fragment_read_qr"
         tools:layout="@layout/fragment_read_qr" >
         <action
             android:id="@+id/action_readQrFragment_to_resultScanFragment"
             app:destination="@id/resultScanFragment" />
+        <argument
+            android:name="event"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/newUserFragment"
-        android:name="com.example.marcelo.fragments.NewUserFragment"
+        android:name="com.example.marcelo.fragments.manage.NewUserFragment"
         android:label="NewUserFragment" />
     <fragment
         android:id="@+id/resultScanFragment"
-        android:name="com.example.marcelo.fragments.ResultScanFragment"
+        android:name="com.example.marcelo.fragments.qr.ResultScanFragment"
         android:label="fragment_result_scan"
         tools:layout="@layout/fragment_result_scan" >
         <argument
             android:name="docRef"
+            app:argType="string" />
+        <argument
+            android:name="event"
             app:argType="string" />
     </fragment>
     <fragment
@@ -36,11 +42,17 @@
             android:id="@+id/action_menuFragment_to_newUserFragment"
             app:destination="@id/newUserFragment" />
         <action
-            android:id="@+id/action_menuFragment_to_readQrFragment"
-            app:destination="@id/readQrFragment" />
-        <action
             android:id="@+id/action_menuFragment_to_newSellerFragment"
             app:destination="@id/newSellerFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_newEventFragment"
+            app:destination="@id/newEventFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_selectQrReadingFragment"
+            app:destination="@id/selectQrReadingFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_deleteEventFragment"
+            app:destination="@id/deleteEventFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -53,7 +65,25 @@
     </fragment>
     <fragment
         android:id="@+id/newSellerFragment"
-        android:name="com.example.marcelo.fragments.NewSellerFragment"
+        android:name="com.example.marcelo.fragments.manage.NewSellerFragment"
         android:label="fragment_new_seller"
         tools:layout="@layout/fragment_new_seller" />
+    <fragment
+        android:id="@+id/newEventFragment"
+        android:name="com.example.marcelo.fragments.manage.NewEventFragment"
+        android:label="fragment_new_event"
+        tools:layout="@layout/fragment_new_event" />
+    <fragment
+        android:id="@+id/selectQrReadingFragment"
+        android:name="com.example.marcelo.fragments.qr.SelectQrReadingFragment"
+        android:label="fragment_select_qr_reading"
+        tools:layout="@layout/fragment_select_qr_reading" >
+        <action
+            android:id="@+id/action_selectQrReadingFragment_to_readQrFragment"
+            app:destination="@id/readQrFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/deleteEventFragment"
+        android:name="com.example.marcelo.fragments.manage.DeleteEventFragment"
+        android:label="DeleteEventFragment" />
 </navigation>

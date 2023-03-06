@@ -1,6 +1,5 @@
-package com.example.marcelo.fragments
+package com.example.marcelo.fragments.qr
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import com.example.marcelo.R
 import com.example.marcelo.databinding.FragmentReadQrBinding
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.zxing.integration.android.IntentIntegrator
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
@@ -23,11 +21,6 @@ class ReadQrFragment : Fragment() {
     private val binding get() = _binding!!
 
     val db = Firebase.firestore
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,7 +54,10 @@ class ReadQrFragment : Fragment() {
         } else {
             Toast.makeText(context, "Scanned: " + result.contents, Toast.LENGTH_LONG).show()
             if (findNavController().currentDestination?.id == R.id.readQrFragment) {
-                val action = ReadQrFragmentDirections.actionReadQrFragmentToResultScanFragment(result.contents)
+                val action = ReadQrFragmentDirections.actionReadQrFragmentToResultScanFragment(
+                    result.contents,
+                    arguments?.getString("event")!!
+                )
                 findNavController().navigate(action)
             }
         }

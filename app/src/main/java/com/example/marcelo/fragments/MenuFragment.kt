@@ -32,11 +32,13 @@ class MenuFragment : Fragment() {
         val view = binding.root
 
         if (auth.currentUser?.email == "rosanomarcelo84@gmail.com") {
-            binding.btnDeleteUser.visibility = View.VISIBLE
+            binding.btnDeleteEvent.visibility = View.VISIBLE
             binding.btnNewSeller.visibility = View.VISIBLE
+            binding.btnNewEvent.visibility = View.VISIBLE
         }else {
-            binding.btnDeleteUser.visibility = View.GONE
+            binding.btnDeleteEvent.visibility = View.GONE
             binding.btnNewSeller.visibility = View.GONE
+            binding.btnNewEvent.visibility = View.GONE
         }
         return view
     }
@@ -49,18 +51,13 @@ class MenuFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnScanQr.setOnClickListener {
-            findNavController().navigate(R.id.action_menuFragment_to_readQrFragment)
+            findNavController().navigate(R.id.action_menuFragment_to_selectQrReadingFragment)
         }
         binding.btnCreateUser.setOnClickListener {
             findNavController().navigate(R.id.action_menuFragment_to_newUserFragment)
         }
-        binding.btnDeleteUser.setOnClickListener {
-            db.collection("users").get().addOnSuccessListener { result ->
-                for (document in result) {
-                    db.collection("users").document(document.id).delete()
-                    db.collection("mail").document(document.id).delete()
-                }
-            }
+        binding.btnDeleteEvent.setOnClickListener {
+            findNavController().navigate(R.id.action_menuFragment_to_deleteEventFragment)
         }
         binding.btnExit.setOnClickListener {
             auth.signOut()
@@ -69,6 +66,10 @@ class MenuFragment : Fragment() {
 
         binding.btnNewSeller.setOnClickListener {
             findNavController().navigate(R.id.action_menuFragment_to_newSellerFragment)
+        }
+
+        binding.btnNewEvent.setOnClickListener {
+            findNavController().navigate(R.id.action_menuFragment_to_newEventFragment)
         }
     }
 }

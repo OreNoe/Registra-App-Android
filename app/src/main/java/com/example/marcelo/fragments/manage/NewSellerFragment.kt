@@ -1,4 +1,4 @@
-package com.example.marcelo.fragments
+package com.example.marcelo.fragments.manage
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,11 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import com.example.marcelo.R
-import com.example.marcelo.databinding.FragmentLoginBinding
 import com.example.marcelo.databinding.FragmentNewSellerBinding
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 

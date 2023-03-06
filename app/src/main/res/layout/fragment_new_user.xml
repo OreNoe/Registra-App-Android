@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".fragments.NewUserFragment">
+    tools:context=".fragments.manage.NewUserFragment">
 
     <TextView
         android:id="@+id/title_textview"
@@ -66,17 +66,35 @@
         android:id="@+id/spinner_label_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select an Option:"
+        android:text="Select a Level:"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginTop="32dp"/>
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/level_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:entries="@array/spinner_info"
+        android:backgroundTint="@color/cardview_dark_background"
+        android:spinnerMode="dialog"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/event_spinner_label_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select an Event:"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="32dp"/>
+
+    <Spinner
+        android:id="@+id/event_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:backgroundTint="@color/cardview_dark_background"
         android:spinnerMode="dialog"
         android:layout_marginTop="8dp"/>
