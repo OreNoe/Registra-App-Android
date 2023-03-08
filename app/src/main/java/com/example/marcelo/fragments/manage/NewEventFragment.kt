@@ -39,15 +39,23 @@ class NewEventFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.createEventButton.setOnClickListener {
-            val nameTxt = binding.nameEdittext.text.toString()
+            val nameTxt = binding.nameEdittext.text.toString().replace("\\s".toRegex(), "")
+            val datePicker = binding.datePicker
+            val dateTxt = "${datePicker.dayOfMonth}/${datePicker.month + 1}/${datePicker.year}"
+            println("Fecha $dateTxt")
             when{
                 nameTxt.isEmpty() -> {
                     binding.nameEdittext.error = "Please enter name"
                     binding.nameEdittext.requestFocus()
+                }
+                dateTxt.isEmpty() -> {
+                    Toast.makeText(context, "Please enter date", Toast.LENGTH_SHORT).show()
+                    binding.datePicker.requestFocus()
                 }else -> {
                     //create event with nameTxt as document id
                     val event = hashMapOf(
-                        "name" to nameTxt
+                        "name" to nameTxt,
+                        "date" to dateTxt
                     )
                     db.collection("events").document(nameTxt).set(event)
                         .addOnSuccessListener {

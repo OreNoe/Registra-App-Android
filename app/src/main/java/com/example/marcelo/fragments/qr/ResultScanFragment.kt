@@ -1,11 +1,19 @@
 package com.example.marcelo.fragments.qr
 
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.os.Bundle
+import android.print.PrintAttributes
+import android.print.PrintManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.marcelo.R
@@ -22,6 +30,7 @@ class ResultScanFragment : Fragment() {
 
     private val db = Firebase.firestore
 
+    private var mWebView: WebView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -81,12 +90,10 @@ class ResultScanFragment : Fragment() {
                             .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully updated!") }
                             .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
 
-                        //delete mail from database
-                        db.collection("mails").document(docRef)
-                            .delete()
+                        //delete mail collection
+                        db.collection("mail").document(docRef).delete()
                             .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
                             .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
-
                         readAgain()
                     }else{ noExistUser() }
                 } else { noExistUser() }
@@ -110,4 +117,53 @@ class ResultScanFragment : Fragment() {
         binding.levelTextview.text = "in database"
         readAgain()
     }
+
+    private fun doWebViewPrint() {
+        // Create a WebView object specifically for printing
+        val webView = activity?.let { WebView(it) }
+        webView?.webViewClient = object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
+
+            override fun onPageFinished(view: WebView, url: String) {
+                Log.i(TAG, "page finished loading $url")
+                createWebPrintJob(view)
+                mWebView = null
+            }
+        }
+
+        // Generate an HTML document on the fly:
+        val htmlDocument =
+            "<html><body><h1>Test Content</h1><p>Testing, testing, testing...</p></body></html>"
+        webView?.loadDataWithBaseURL(null, htmlDocument, "text/HTML", "UTF-8", null)
+
+        // Keep a reference to WebView object until you pass the PrintDocumentAdapter
+        // to the PrintManager
+        mWebView = webView
+    }
+
+    private fun createWebPrintJob(webView: WebView) {
+
+        // Get a PrintManager instance
+        (activity?.getSystemService(Context.PRINT_SERVICE) as? PrintManager)?.let { printManager ->
+
+            val jobName = "${getString(R.string.app_name)} Document"
+
+            // Get a print adapter instance
+            val printAdapter = webView.createPrintDocumentAdapter(jobName)
+
+            // Create a print job with name and adapter instance
+            printManager.print(
+                jobName,
+                printAdapter,
+                PrintAttributes.Builder().build()
+            ).also { printJob ->
+
+                // Save the job object for later status checking
+                var printJobs = printJob
+            }
+        }
+    }
+
+
 }

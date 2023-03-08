@@ -1,12 +1,16 @@
 package com.example.marcelo.fragments.manage
 
 import android.R
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.marcelo.databinding.FragmentNewUserBinding
@@ -14,7 +18,17 @@ import com.example.marcelo.entities.User
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import org.checkerframework.checker.nullness.qual.NonNull
+import java.io.ByteArrayOutputStream
 import java.net.URLEncoder
+import java.util.*
 
 
 class NewUserFragment : Fragment() {
@@ -39,6 +53,7 @@ class NewUserFragment : Fragment() {
         _binding = null
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -87,44 +102,55 @@ class NewUserFragment : Fragment() {
                             .document(binding.eventSpinner.selectedItem.toString())
                             .collection("users").add(user)
                             .addOnSuccessListener { documentReference ->
-                                Toast.makeText(requireContext(), "User added successfully", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    "User added successfully",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                db.collection("events")
+                                    .document(binding.eventSpinner.selectedItem.toString()).get()
+                                    .addOnSuccessListener { document ->
+                                        val event = document.data
+                                        val eventName = event?.get("name").toString()
+                                        val eventDate = event?.get("date").toString()
+                                        var color = ""
+                                        when (lvlNum) {
+                                            1 -> color = "cd7f32"
+                                            2 -> color = "c0c0c0"
+                                            3 -> color = "ffd700"
+                                        }
+                                        val qrCodeEncoded =
+                                            URLEncoder.encode(documentReference.id, "UTF-8")
+                                        val qrCode =
+                                            "<p><img src=\"https://quickchart.io/qr?text=${qrCodeEncoded}&amp;size=300&amp;centerImageUrl=https://i.imgur.com/d4walK4.jpeg\" style=\"height:300px; max-width:100%; width:300px\" /></p>"
 
-                                val qrCodeEncoded = URLEncoder.encode(documentReference.id, "UTF-8")
-
-                                var color = ""
-                                when (lvlNum) {
-                                    1 -> color = "cd7f32"
-                                    2 -> color = "c0c0c0"
-                                    3 -> color = "ffd700"
-                                }
-
-                                val mailData = hashMapOf(
-                                    "to" to emailTxt,
-                                    "message" to hashMapOf(
-                                        "subject" to "Entrada to ${binding.eventSpinner.selectedItem.toString()}",
-                                        "html" to (
-                                            "<p>Hola ${nameTxt} ${surnameTxt}!</p>" +
-                                                    "<p>Gracias por registrarte al evento!</p>" +
-                                                    "<p>Para ingresar al evento escanea el siguiente codigo QR:</p>" +
-                                                    "<p><img src=\"https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;data=${qrCodeEncoded}&amp;&bgcolor=${color}\" /></p>" +
-                                                    "<p>Saludos!</p>"
+                                        val mailData = hashMapOf(
+                                            "to" to emailTxt,
+                                            "message" to hashMapOf(
+                                                "subject" to "Registro en evento",
+                                                "html" to "<p>Estimado ${nameTxt} ${surnameTxt},</p><p>Te has registrado en el evento ${eventName} con fecha ${eventDate}.</p>"+
+                                                        "<p>Este es tu código QR:</p>${qrCode}<p>Saludos,</p><p>Equipo de Eventos</p>"
+                                            )
                                         )
-                                    )
-                                )
+                                        db.collection("mail").document(documentReference.id)
+                                            .set(mailData)
+                                            .addOnSuccessListener { ref ->
 
-                                db.collection("mail").add(mailData)
-                                    .addOnSuccessListener { documentReference ->
-                                        println("DocumentSnapshot written with ID: ${documentReference.id}")
+                                            }
+                                            .addOnFailureListener { e ->
+                                                println("Error adding document: $e")
+                                            }
+                                        findNavController().popBackStack()
                                     }
                                     .addOnFailureListener { e ->
                                         println("Error adding document: $e")
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "Error adding user",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        findNavController().popBackStack()
                                     }
-                                findNavController().popBackStack()
-                            }
-                            .addOnFailureListener { e ->
-                                println("Error adding document: $e")
-                                Toast.makeText(requireContext(), "Error adding user", Toast.LENGTH_SHORT).show()
-                                findNavController().popBackStack()
                             }
                     }
                 }

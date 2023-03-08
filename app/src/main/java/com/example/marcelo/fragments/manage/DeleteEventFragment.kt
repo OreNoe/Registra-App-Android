@@ -56,24 +56,14 @@ class DeleteEventFragment : Fragment() {
         binding.btnDeleteEvent.setOnClickListener {
             if (!binding.eventSpinner.adapter.isEmpty) {
                 val event = binding.eventSpinner.selectedItem.toString()
-                //for all documents in the event collection delete them and also delete the ones in the mail collection with the same id
-                db.collection("events").document(event).collection("users").get()
-                    .addOnSuccessListener { result ->
-                        for (document in result) {
-                            db.collection("mails").document(document.id).delete()
-                            db.collection("events").document(event).collection("users")
-                                .document(document.id).delete()
-                        }
+                //delete all mails from the path /mail
+                db.collection("mail").get().addOnSuccessListener { result ->
+                    for (document in result) {
+                        db.collection("mail").document(document.id).delete()
                     }
-                    .addOnFailureListener { exception ->
-                        println("Error getting documents: $exception")
-                    }
+                }
                 db.collection("events").document(event).delete()
-                Toast.makeText(
-                    requireContext(),
-                    "Evento eliminado correctamente!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Evento eliminado!", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }else {Toast.makeText(requireContext(), "No hay eventos para eliminar!", Toast.LENGTH_SHORT).show()}
         }
