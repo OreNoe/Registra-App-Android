@@ -7,11 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.marcelo.R
 import com.example.marcelo.databinding.FragmentMenuBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MenuFragment : Fragment() {
@@ -71,5 +78,6 @@ class MenuFragment : Fragment() {
         binding.btnNewEvent.setOnClickListener {
             findNavController().navigate(R.id.action_menuFragment_to_newEventFragment)
         }
+
     }
 }

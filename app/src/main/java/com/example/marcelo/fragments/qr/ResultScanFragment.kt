@@ -1,19 +1,13 @@
 package com.example.marcelo.fragments.qr
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
-import android.print.PrintAttributes
-import android.print.PrintManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.marcelo.R
@@ -21,7 +15,11 @@ import com.example.marcelo.databinding.FragmentResultScanBinding
 import com.example.marcelo.entities.User
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-
+import kotlinx.coroutines.*
+import org.json.JSONObject
+import java.io.DataOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
 class ResultScanFragment : Fragment() {
 
@@ -60,41 +58,40 @@ class ResultScanFragment : Fragment() {
 
         db.collection("events").document(event).collection("users").document(docRef).get()
             .addOnSuccessListener { document ->
-                binding.progressBar.visibility = View.GONE
                 if (document != null) {
                     if (document.getString("name") != null){
-                        val user = document.toObject(User::class.java)
-                        Log.d("TAG", "DocumentSnapshot data: ${document.data}")
+                        if (document.getBoolean("active") == true){
+                            val user = document.toObject(User::class.java)
+                            Log.d("TAG", "DocumentSnapshot data: ${document.data}")
 
-                        when (user?.lvl) {
-                            1 -> {
-                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.bronze))
-                                binding.levelTextview.text = "Level: Bronze"
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if (user != null) {
+                                    updateUser(event, user.name, user.surname, user.email, user.lvl, user.encargado, "true", requireContext())
+                                }
+                                withContext(Dispatchers.Main){
+                                    binding.progressBar.visibility = View.GONE
+                                    binding.nameTextview.text = "Name: " + user?.name
+                                    binding.surnameTextview.text = "Surname: " + user?.surname
+                                }
                             }
-                            2 -> {
-                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.silver))
-                                binding.levelTextview.text = "Level: Silver"
+
+                            when (user?.lvl) {
+                                1 -> {
+                                    binding.backgroundView.setBackgroundColor(resources.getColor(R.color.bronze))
+                                    binding.levelTextview.text = "General"
+                                }
+                                2 -> {
+                                    binding.backgroundView.setBackgroundColor(resources.getColor(R.color.silver))
+                                    binding.levelTextview.text = "VIP"
+                                }
+                                3 -> {
+                                    binding.backgroundView.setBackgroundColor(resources.getColor(R.color.gold))
+                                    binding.levelTextview.text = "Invitado"
+                                }
                             }
-                            3 -> {
-                                binding.backgroundView.setBackgroundColor(resources.getColor(R.color.gold))
-                                binding.levelTextview.text = "Level: Gold"
-                            }
-                        }
-
-                        binding.nameTextview.text = "Name: " + user?.name
-                        binding.surnameTextview.text = "Surname: " + user?.surname
-
-                        //update user in database
-                        db.collection("events").document(event).collection("users").document(docRef)
-                            .update("status", true)
-                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully updated!") }
-                            .addOnFailureListener { e -> Log.w("TAG", "Error updating document", e) }
-
-                        //delete mail collection
-                        db.collection("mail").document(docRef).delete()
-                            .addOnSuccessListener { Log.d("TAG", "DocumentSnapshot successfully deleted!") }
-                            .addOnFailureListener { e -> Log.w("TAG", "Error deleting document", e) }
-                        readAgain()
+                            db.collection("events").document(event).collection("users").document(docRef).update("active", false, "status", true,"timestamp", System.currentTimeMillis())
+                            readAgain()
+                        }else{ noExistUser() }
                     }else{ noExistUser() }
                 } else { noExistUser() }
             }
@@ -117,53 +114,29 @@ class ResultScanFragment : Fragment() {
         binding.levelTextview.text = "in database"
         readAgain()
     }
-
-    private fun doWebViewPrint() {
-        // Create a WebView object specifically for printing
-        val webView = activity?.let { WebView(it) }
-        webView?.webViewClient = object : WebViewClient() {
-
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
-
-            override fun onPageFinished(view: WebView, url: String) {
-                Log.i(TAG, "page finished loading $url")
-                createWebPrintJob(view)
-                mWebView = null
-            }
+    suspend fun updateUser(eventName: String, name: String, surname: String, email: String, lvl: Int, encargado: String, status: String, context: Context){
+        val url = URL("https://registra-app.uc.r.appspot.com/updateUser")
+        val connection = withContext(Dispatchers.IO) {
+            url.openConnection()
+        } as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        val json = JSONObject()
+        json.put("eventName", eventName)
+        json.put("name", name)
+        json.put("surname", surname)
+        json.put("email", email)
+        json.put("lvl", lvl)
+        json.put("encargado", encargado)
+        json.put("status", status)
+        val wr = DataOutputStream(connection.outputStream)
+        withContext(Dispatchers.IO) {
+            wr.writeBytes(json.toString())
+            wr.flush()
+            wr.close()
         }
-
-        // Generate an HTML document on the fly:
-        val htmlDocument =
-            "<html><body><h1>Test Content</h1><p>Testing, testing, testing...</p></body></html>"
-        webView?.loadDataWithBaseURL(null, htmlDocument, "text/HTML", "UTF-8", null)
-
-        // Keep a reference to WebView object until you pass the PrintDocumentAdapter
-        // to the PrintManager
-        mWebView = webView
+        val responseCode = connection.responseCode
+        Log.d("TAG", "Response Code : $responseCode")
     }
-
-    private fun createWebPrintJob(webView: WebView) {
-
-        // Get a PrintManager instance
-        (activity?.getSystemService(Context.PRINT_SERVICE) as? PrintManager)?.let { printManager ->
-
-            val jobName = "${getString(R.string.app_name)} Document"
-
-            // Get a print adapter instance
-            val printAdapter = webView.createPrintDocumentAdapter(jobName)
-
-            // Create a print job with name and adapter instance
-            printManager.print(
-                jobName,
-                printAdapter,
-                PrintAttributes.Builder().build()
-            ).also { printJob ->
-
-                // Save the job object for later status checking
-                var printJobs = printJob
-            }
-        }
-    }
-
-
 }

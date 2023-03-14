@@ -1,10 +1,9 @@
 package com.example.marcelo.fragments.manage
 
 import android.R
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,20 +12,24 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.marcelo.databinding.FragmentNewUserBinding
 import com.example.marcelo.entities.User
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.WriterException
-import com.google.zxing.common.BitMatrix
-import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import org.checkerframework.checker.nullness.qual.NonNull
-import java.io.ByteArrayOutputStream
+import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.DataOutputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.net.URLEncoder
 import java.util.*
 
@@ -45,6 +48,7 @@ class NewUserFragment : Fragment() {
     ): View? {
         _binding = FragmentNewUserBinding.inflate(inflater, container, false)
         val view = binding.root
+        binding.progressBar.visibility = View.GONE
         return view
     }
 
@@ -74,10 +78,12 @@ class NewUserFragment : Fragment() {
 
         if (auth.currentUser != null) {
             binding.continueButton.setOnClickListener {
-                val emailEncargado = auth.currentUser?.email.toString()
-                val nameTxt = binding.nameEdittext.text.toString()
-                val surnameTxt = binding.surnameEdittext.text.toString()
-                val emailTxt = binding.emailEdittext.text.toString()
+                val nameTxt = binding.nameEdittext.text.toString().trim()
+                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                val surnameTxt = binding.surnameEdittext.text.toString().trim()
+                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+                val emailTxt = binding.emailEdittext.text.toString().trim()
+                val emailEncargado = auth.currentUser?.email.toString().trim()
                 val lvlNum = binding.levelSpinner.selectedItemPosition + 1
                 val user = User(nameTxt, surnameTxt, emailTxt, lvlNum, emailEncargado)
                 when {
@@ -98,6 +104,8 @@ class NewUserFragment : Fragment() {
                         binding.eventSpinner.requestFocus()
                     }
                     else -> {
+                        binding.continueButton.isEnabled = false
+                        binding.progressBar.visibility = View.VISIBLE
                         db.collection("events")
                             .document(binding.eventSpinner.selectedItem.toString())
                             .collection("users").add(user)
@@ -140,7 +148,14 @@ class NewUserFragment : Fragment() {
                                             .addOnFailureListener { e ->
                                                 println("Error adding document: $e")
                                             }
-                                        findNavController().popBackStack()
+                                        CoroutineScope(Dispatchers.IO).launch() {
+                                            addUserToEvent(eventName, nameTxt, surnameTxt, emailTxt, lvlNum, emailEncargado)
+                                            withContext(Dispatchers.Main) {
+                                                binding.continueButton.isEnabled = true
+                                                binding.progressBar.visibility = View.GONE
+                                                findNavController().popBackStack()
+                                            }
+                                        }
                                     }
                                     .addOnFailureListener { e ->
                                         println("Error adding document: $e")
@@ -159,4 +174,57 @@ class NewUserFragment : Fragment() {
             findNavController().popBackStack()
         }
     }
+
+    suspend fun deleteUser(eventName: String, name: String, surname: String, email: String, lvl: Int, encargado: String) {
+        val url = URL("https://registra-app.uc.r.appspot.com/deleteUser")
+        val connection = withContext(Dispatchers.IO) {
+            url.openConnection()
+        } as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        val json = JSONObject()
+        json.put("eventName", eventName)
+        json.put("name", name)
+        json.put("surname", surname)
+        json.put("email", email)
+        json.put("lvl", lvl.toString())
+        json.put("encargado", encargado)
+        println(json.toString())
+        val wr = DataOutputStream(connection.outputStream)
+        withContext(Dispatchers.IO) {
+            wr.writeBytes(json.toString())
+            wr.flush()
+            wr.close()
+        }
+        val responseCode = connection.responseCode
+        Log.d("TAG", "Response Code : $responseCode")
+    }
+
+    suspend fun addUserToEvent(eventName: String, name: String, surname: String, email: String, lvl: Int, encargado: String) {
+        val url = URL("https://registra-app.uc.r.appspot.com/addUserToEvent")
+        val connection = withContext(Dispatchers.IO) {
+            url.openConnection()
+        } as HttpURLConnection
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.doOutput = true
+        val json = JSONObject()
+        json.put("eventName", eventName)
+        json.put("name", name)
+        json.put("surname", surname)
+        json.put("email", email)
+        json.put("lvl", lvl)
+        json.put("encargado", encargado)
+        val wr = DataOutputStream(connection.outputStream)
+        withContext(Dispatchers.IO) {
+            wr.writeBytes(json.toString())
+            wr.flush()
+            wr.close()
+        }
+        val responseCode = connection.responseCode
+        Log.d("TAG", "Response Code : $responseCode")
+    }
+
+
 }

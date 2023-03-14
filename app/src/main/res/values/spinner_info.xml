@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="spinner_info">
-        <item>Level 1</item>
-        <item>Level 2</item>
-        <item>Level 3</item>
+        <item>General</item>
+        <item>VIP</item>
+        <item>Invitado</item>
     </string-array>
 </resources>
